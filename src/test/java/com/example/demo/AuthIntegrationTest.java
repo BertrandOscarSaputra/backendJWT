@@ -1,7 +1,6 @@
 package com.example.demo;
 
 import com.example.demo.dto.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -13,8 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.json.JsonMapper;
 
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -28,7 +27,7 @@ class AuthIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper jsonMapper;
 
     private static String accessToken;
     private static String refreshToken;
@@ -46,7 +45,7 @@ class AuthIntegrationTest {
 
         MvcResult result = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value(201))
                 .andExpect(jsonPath("$.message").value("Registrasi berhasil"))
@@ -58,7 +57,7 @@ class AuthIntegrationTest {
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        var responseNode = objectMapper.readTree(responseBody);
+        var responseNode = jsonMapper.readTree(responseBody);
         accessToken = responseNode.get("data").get("accessToken").asText();
         refreshToken = responseNode.get("data").get("refreshToken").asText();
     }
@@ -76,7 +75,7 @@ class AuthIntegrationTest {
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Username sudah digunakan"));
     }
@@ -93,7 +92,7 @@ class AuthIntegrationTest {
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors").isNotEmpty());
     }
@@ -109,7 +108,7 @@ class AuthIntegrationTest {
 
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Login berhasil"))
@@ -119,7 +118,7 @@ class AuthIntegrationTest {
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        var responseNode = objectMapper.readTree(responseBody);
+        var responseNode = jsonMapper.readTree(responseBody);
         accessToken = responseNode.get("data").get("accessToken").asText();
         refreshToken = responseNode.get("data").get("refreshToken").asText();
     }
@@ -135,7 +134,7 @@ class AuthIntegrationTest {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Username atau password salah"));
     }
@@ -169,14 +168,14 @@ class AuthIntegrationTest {
 
         MvcResult result = mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").isNotEmpty())
                 .andExpect(jsonPath("$.data.refreshToken").isNotEmpty())
                 .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        var responseNode = objectMapper.readTree(responseBody);
+        var responseNode = jsonMapper.readTree(responseBody);
         accessToken = responseNode.get("data").get("accessToken").asText();
         refreshToken = responseNode.get("data").get("refreshToken").asText();
     }
@@ -201,7 +200,7 @@ class AuthIntegrationTest {
 
         mockMvc.perform(post("/api/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
     }
 }
